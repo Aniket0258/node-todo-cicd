@@ -1,30 +1,45 @@
-pipeline {
+pipeline
+{
     agent any
-    
-    stages{
-        stage("Code"){
-            steps{
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
+    stages {
+        stage("code") {
+            steps {
+                git url: "https://github.com/Aniket0258/node-todo-cicd.git", branch: "master"
+                 echo "code copied"
             }
+           
+            
         }
-        stage("Build & Test"){
-            steps{
-                sh "docker build . -t node-app-test-new"
+        stage("build & test") {
+            steps {
+                sh "docker build . -t node-app"
+                
+                echo"code build & test"
             }
+            
         }
-        stage("Push to DockerHub"){
-            steps{
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                    sh "docker tag node-app-test-new ${env.dockerHubUser}/node-app-test-new:latest"
-                    sh "docker push ${env.dockerHubUser}/node-app-test-new:latest" 
-                }
+        stage("push to repo") {
+            steps {
+                  echo "code push to repo"
+                withCredentials([usernamePassword(credentialsId: "dockerHub", passwordVariable: "dockerHubpass", usernameVariable: "dockerHubuser")]) {
+              sh "docker login -u ${env.dockerHubuser} -p ${env.dockerHubpass}"
+        // Other Docker-related commands can follow here, securely using the logged-in credentials
+              sh "docker tag node-app ${env.dockerHubuser}/node-app:latest "
+              sh "docker push ${env.dockerHubuser}/node-app:latest  "
+    }
+}
+
+        
+        }
+        stage("deployed") {
+            steps {
+                sh "docker-compose down && docker-compose up  -d"
+                echo "code deployed"
+                
             }
+            
         }
-        stage("Deploy"){
-            steps{
-                sh "docker-compose down && docker-compose up -d"
-            }
-        }
+        
+        
     }
 }
